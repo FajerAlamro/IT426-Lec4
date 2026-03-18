@@ -540,6 +540,30 @@ body::after {
   from { opacity:0; transform:translateY(10px); }
   to   { opacity:1; transform:translateY(0); }
 }
+  .footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(4,13,26,0.92);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  padding: 10px 28px;
+  text-align: center;
+}
+.footer-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.footer-title span {
+  color: var(--blue-400);
+}
+.footer-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
 </style>
 </head>
 <body>
@@ -1617,5 +1641,14 @@ function goHome(){
 }
 // ACTIVE_GRAPH is set inside startPractice(); no buildMap needed at load time
 </script>
+  <footer class="footer">
+  <div class="footer-title">
+    IT426: Artificial Intelligence Systems
+    <span>— Ch.4: Uninformed Search</span>
+  </div>
+  <div class="footer-sub">
+    Information Technology Department · King Saud University
+  </div>
+</footer>
 </body>
 </html>
