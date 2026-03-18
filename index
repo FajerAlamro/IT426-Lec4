@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Algorithms Practice — IT426</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* KSU official blue palette */
+  --ksu:        #0078B4;
+  --ksu-dark:   #005a87;
+  --ksu-deeper: #003f61;
+  --ksu-light:  #e6f3fb;
+  --ksu-lighter:#f0f8fd;
+
+  /* Blue scale — light mode */
+  --blue-50:    #eff8ff;
+  --blue-100:   #dbeffe;
+  --blue-200:   #b9e1fd;
+  --blue-300:   #7ccbfc;
+  --blue-400:   #38aef8;
+  --blue-500:   #0e93e8;
+  --blue-600:   #0078B4;   /* = --ksu */
+  --blue-700:   #0062a1;
+  --blue-800:   #00497a;
+  --blue-900:   #003254;
+
+  /* Surface / BG */
+  --bg:         #f0f7fc;
+  --bg2:        #e3f1fa;
+  --surface:    #ffffff;
+  --surface2:   #f4faff;
+  --surface3:   #e8f5fd;
+  --border:     #bddff2;
+  --border2:    #8ecce8;
+
+  /* Semantic */
+  --text:       #0b2740;
+  --text2:      #275e7a;
+  --muted:      #5590a8;
+  --muted2:     #88b8cc;
+  --correct:    #15803d;
+  --wrong:      #b91c1c;
+  --warn:       #b45309;
+
+  /* Algo accent colors */
+  --bfs-color:  #0078B4;
+  --dfs-color:  #0e93e8;
+  --ucs-color:  #00497a;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Subtle dot grid */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: .5;
+  pointer-events:none; z-index:0;
+}
+
+/* Blue gradient blobs */
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 70% 40% at 10% 0%,  rgba(0,120,180,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 90% 95%,  rgba(0,120,180,0.06) 0%, transparent 55%);
+  pointer-events:none; z-index:0;
+}
+
+/* ── NAV ── */
+.nav {
+  position:sticky; top:0; z-index:100;
+  display:flex; align-items:center; gap:14px;
+  padding:0 28px; height:58px;
+  background: rgba(240,247,252,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(0,90,135,0.07);
+}
+.nav-brand {
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:3px;
+  color:var(--muted); text-transform:uppercase;
+  font-weight:500;
+}
+.nav-sep { width:1px; height:18px; background:var(--border); }
+.nav-title { font-size:13px; font-weight:700; color:var(--ksu); }
+
+/* KSU Logo in nav */
+.ksu-logo {
+  margin-left:auto;
+  height:36px; width:auto;
+  border-radius:6px;
+  display:block;
+}
+
+.nav-back {
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--text2); padding:5px 16px; border-radius:7px;
+  cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:12px; font-weight:600;
+  display:none; transition:all .2s;
+  margin-right:12px;
+}
+.nav-back:hover { color:var(--ksu); border-color:var(--ksu); background:var(--ksu-light); }
+
+/* ── HOME ── */
+#home {
+  min-height:calc(100vh - 58px);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:60px 24px;
+  position:relative; z-index:1;
+}
+
+.home-pill {
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:40px;
+  padding:6px 18px 6px 10px;
+  margin-bottom:36px;
+  box-shadow:0 2px 8px rgba(0,90,135,0.09);
+}
+.home-pill-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:var(--ksu); flex-shrink:0;
+}
+.home-pill-text {
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:2px;
+  color:var(--ksu); text-transform:uppercase; font-weight:500;
+}
+
+.home-title {
+  font-size:clamp(32px,5.5vw,62px);
+  font-weight:800; text-align:center;
+  line-height:1.08; margin-bottom:18px;
+  letter-spacing:-2px;
+  color:var(--blue-900);
+}
+.home-title .grad {
+  background:linear-gradient(135deg, var(--blue-600) 0%, var(--blue-400) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.home-sub {
+  font-size:15px; color:var(--text2);
+  text-align:center; max-width:500px;
+  line-height:1.8; margin-bottom:52px;
+  font-weight:400;
+}
+
+/* ── CONCEPT BANNER ── */
+.concept-banner {
+  width:100%; max-width:900px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:24px 28px;
+  margin-bottom:40px;
+  position:relative; overflow:hidden;
+  box-shadow:0 2px 16px rgba(0,90,135,0.07);
+}
+.concept-banner::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--blue-800), var(--blue-600), var(--blue-400), var(--blue-600), var(--blue-800));
+}
+.concept-label {
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:3px;
+  color:var(--muted); text-transform:uppercase;
+  margin-bottom:18px; font-weight:500;
+  display:flex; align-items:center; gap:8px;
+}
+.concept-label::after {
+  content:''; flex:1; height:1px;
+  background:linear-gradient(90deg, var(--border), transparent);
+}
+.concept-row {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+}
+@media(max-width:640px){ .concept-row { grid-template-columns:1fr; } }
+
+.concept-card {
+  background:var(--blue-50);
+  border:1px solid var(--border);
+  border-radius:12px; padding:16px;
+  transition:border-color .2s, box-shadow .2s;
+}
+.concept-card:hover { border-color:var(--ksu); box-shadow:0 2px 10px rgba(0,120,180,0.12); }
+.concept-card h4 {
+  font-size:12.5px; font-weight:700;
+  margin-bottom:12px; letter-spacing:.2px;
+}
+.concept-card.bfs h4  { color:var(--blue-700); }
+.concept-card.dfs h4  { color:var(--blue-600); }
+.concept-card.ucs h4  { color:var(--blue-900); }
+.concept-item {
+  font-size:10.5px; color:var(--text2);
+  font-family:'JetBrains Mono',monospace;
+  margin-bottom:6px;
+  display:flex; gap:8px;
+}
+.ci-arrow { color:var(--ksu); flex-shrink:0; font-size:9px; margin-top:1px; }
+
+/* ── ALGO CARDS ── */
+.cards {
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
+  gap:16px; width:100%; max-width:900px;
+}
+.algo-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:30px 26px 68px;
+  cursor:pointer; transition:all .3s;
+  position:relative; overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,90,135,0.06);
+}
+.algo-card::before {
+  content:'';
+  position:absolute; inset:0;
+  opacity:0; transition:opacity .3s;
+  border-radius:18px;
+}
+.algo-card[data-a="bfs"]::before { background:radial-gradient(ellipse at top left, rgba(0,120,180,0.07) 0%, transparent 55%); }
+.algo-card[data-a="dfs"]::before { background:radial-gradient(ellipse at top left, rgba(14,147,232,0.07) 0%, transparent 55%); }
+.algo-card[data-a="ucs"]::before { background:radial-gradient(ellipse at top left, rgba(0,73,122,0.07) 0%, transparent 55%); }
+.algo-card:hover::before { opacity:1; }
+
+.algo-card::after {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:3px; border-radius:18px 18px 0 0;
+}
+.algo-card[data-a="bfs"]::after { background:linear-gradient(90deg, var(--blue-700), var(--blue-500)); }
+.algo-card[data-a="dfs"]::after { background:linear-gradient(90deg, var(--blue-600), var(--blue-400)); }
+.algo-card[data-a="ucs"]::after { background:linear-gradient(90deg, var(--blue-900), var(--blue-700)); }
+
+.algo-card:hover {
+  border-color:var(--ksu);
+  transform:translateY(-5px);
+  box-shadow:0 16px 48px rgba(0,90,135,0.15);
+}
+.card-badge {
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px; letter-spacing:1.5px;
+  padding:3px 10px; border-radius:5px;
+  margin-bottom:18px; display:inline-block;
+  text-transform:uppercase; font-weight:500;
+}
+.algo-card[data-a="bfs"] .card-badge { background:var(--blue-100); color:var(--blue-700); border:1px solid var(--blue-200); }
+.algo-card[data-a="dfs"] .card-badge { background:var(--blue-50);  color:var(--blue-600); border:1px solid var(--border); }
+.algo-card[data-a="ucs"] .card-badge { background:var(--ksu-light); color:var(--blue-900); border:1px solid var(--border2); }
+
+.card-abbr {
+  font-size:40px; font-weight:800;
+  letter-spacing:-2px; margin-bottom:4px;
+  line-height:1;
+}
+.algo-card[data-a="bfs"] .card-abbr { color:var(--blue-700); }
+.algo-card[data-a="dfs"] .card-abbr { color:var(--blue-600); }
+.algo-card[data-a="ucs"] .card-abbr { color:var(--blue-900); }
+
+.card-name {
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px; color:var(--muted); letter-spacing:1.5px;
+  margin-bottom:14px; text-transform:uppercase;
+}
+.card-desc { font-size:13px; color:var(--text2); line-height:1.75; }
+.card-count {
+  position:absolute; bottom:22px; left:26px;
+  font-size:11px; color:var(--muted);
+  font-family:'JetBrains Mono',monospace;
+}
+.card-arr {
+  position:absolute; bottom:20px; right:22px;
+  font-size:18px; color:var(--muted2); transition:all .25s;
+}
+.algo-card:hover .card-arr { color:var(--ksu); transform:translate(3px,-3px); }
+
+/* ── PRACTICE ── */
+#practice { display:none; position:relative; z-index:1; }
+.practice-layout {
+  max-width:1100px; margin:0 auto;
+  padding:32px 24px 80px;
+  display:grid;
+  grid-template-columns:1fr 360px;
+  gap:28px; align-items:start;
+}
+@media(max-width:880px){ .practice-layout{ grid-template-columns:1fr; } }
+
+/* rule box */
+.rule-box {
+  background:var(--ksu-light);
+  border:1px solid var(--border);
+  border-left:3px solid var(--ksu);
+  border-radius:0 8px 8px 0;
+  padding:11px 16px;
+  margin-bottom:20px;
+  font-size:11.5px; line-height:1.65;
+  color:var(--ksu-dark);
+  font-family:'JetBrains Mono',monospace;
+}
+.rule-box strong {
+  display:block; font-size:9px;
+  letter-spacing:2.5px; color:var(--muted);
+  margin-bottom:5px; text-transform:uppercase;
+}
+
+/* progress */
+.prog-row { display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+.prog-bar { flex:1; height:3px; background:var(--blue-100); border-radius:3px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:3px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+.prog-lbl {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px; color:var(--muted);
+}
+
+/* question */
+.q-meta {
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:2.5px; color:var(--muted);
+  margin-bottom:10px; text-transform:uppercase;
+}
+.q-text {
+  font-size:16px; font-weight:700;
+  line-height:1.6; margin-bottom:22px;
+  color:var(--text); letter-spacing:-.2px;
+}
+
+/* trainer */
+.trainer-box {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px; padding:18px;
+  margin-bottom:20px;
+  box-shadow:0 1px 6px rgba(0,90,135,0.06);
+  position:relative; overflow:hidden;
+}
+.trainer-box::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg, var(--blue-700), var(--blue-400), transparent);
+}
+.trainer-box h4 {
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:2.5px;
+  color:var(--warn); text-transform:uppercase;
+  margin-bottom:14px; font-weight:600;
+}
+.trace-table { width:100%; border-collapse:collapse; font-size:11px; }
+.trace-table th {
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px; letter-spacing:1.5px;
+  color:var(--muted); padding:7px 10px;
+  border-bottom:1px solid var(--border);
+  text-align:left; font-weight:600; text-transform:uppercase;
+}
+.trace-table td {
+  padding:8px 10px;
+  border-bottom:1px solid rgba(189,223,242,0.6);
+  color:var(--text2);
+  font-family:'JetBrains Mono',monospace; font-size:10.5px;
+  vertical-align:top; line-height:1.5;
+}
+.trace-table tr.active td {
+  background:var(--ksu-light);
+  color:var(--ksu-dark);
+  font-weight:600;
+}
+.trace-table tr:last-child td { border:none; }
+.trace-ask {
+  background:#fffbeb;
+  border:1px solid #fcd34d;
+  border-radius:7px; padding:10px 14px; margin-top:14px;
+  font-size:11px; color:var(--warn);
+  font-family:'JetBrains Mono',monospace; line-height:1.5;
+}
+
+/* options */
+.options { display:flex; flex-direction:column; gap:9px; margin-bottom:18px; }
+.opt {
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:13px 16px; border-radius:10px;
+  cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:13px;
+  text-align:left; transition:all .15s;
+  display:flex; gap:12px; align-items:flex-start;
+  box-shadow:0 1px 3px rgba(0,90,135,0.04);
+}
+.opt-lbl {
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; font-weight:600;
+  background:var(--blue-50); color:var(--muted);
+  border-radius:5px; padding:3px 8px;
+  flex-shrink:0; margin-top:1px; letter-spacing:1px;
+  border:1px solid var(--border);
+}
+.opt:hover:not(:disabled) {
+  background:var(--ksu-light);
+  border-color:var(--ksu);
+  color:var(--ksu-dark);
+}
+.opt:hover:not(:disabled) .opt-lbl {
+  background:rgba(0,120,180,.12); color:var(--ksu);
+  border-color:rgba(0,120,180,.25);
+}
+.opt.correct { background:#f0fdf4; border-color:#86efac; }
+.opt.correct .opt-lbl { background:#dcfce7; color:var(--correct); border-color:#bbf7d0; }
+.opt.wrong   { background:#fef2f2; border-color:#fca5a5; }
+.opt.wrong   .opt-lbl { background:#fee2e2; color:var(--wrong); border-color:#fca5a5; }
+.opt:disabled { cursor:default; }
+
+/* feedback */
+.fb-box {
+  border-radius:10px; padding:16px 18px;
+  font-size:13px; line-height:1.8;
+  display:none; margin-bottom:18px;
+}
+.fb-box.show { display:block; animation:fadeUp .3s ease; }
+.fb-box.ok { background:#f0fdf4; border:1px solid #86efac; color:#166534; }
+.fb-box.no { background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
+.fb-title { font-weight:700; font-size:14px; margin-bottom:8px; }
+.fb-box .key-rule {
+  margin-top:12px; padding:10px 14px;
+  background:#fffbeb; border:1px solid #fcd34d;
+  border-radius:7px;
+  font-family:'JetBrains Mono',monospace; font-size:10.5px;
+  color:var(--warn); line-height:1.6;
+}
+
+/* next button */
+.next-btn {
+  padding:12px 28px; border-radius:9px;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13px;
+  font-weight:700; cursor:pointer; border:none;
+  color:#fff; display:none; transition:all .2s;
+  letter-spacing:.2px;
+}
+.next-btn.show { display:inline-block; animation:fadeUp .25s ease; }
+.next-btn:hover { transform:translateY(-2px); filter:brightness(1.1); box-shadow:0 8px 24px rgba(0,90,135,0.25); }
+
+/* map panel */
+.map-panel {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px; padding:18px;
+  position:sticky; top:76px;
+  box-shadow:0 2px 12px rgba(0,90,135,0.07);
+}
+.map-lbl {
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:2.5px;
+  color:var(--muted); text-transform:uppercase;
+  margin-bottom:12px; font-weight:500;
+}
+#map-svg { width:100%; display:block; border-radius:8px; overflow:hidden; }
+.legend { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+.li { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text2); font-family:'JetBrains Mono',monospace; }
+.ld { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ── RESULTS ── */
+#results {
+  display:none; flex-direction:column;
+  align-items:center; justify-content:center;
+  min-height:calc(100vh - 58px);
+  padding:80px 24px;
+  position:relative; z-index:1;
+}
+.res-pct {
+  font-size:92px; font-weight:800; line-height:1;
+  margin-bottom:6px; letter-spacing:-4px;
+  color:var(--ksu);
+}
+.res-sub {
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:2.5px;
+  color:var(--muted); margin-bottom:24px; text-transform:uppercase;
+}
+.res-msg {
+  font-size:15px; color:var(--text2);
+  max-width:440px; text-align:center;
+  line-height:1.8; margin-bottom:40px;
+}
+.res-btns { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:52px; }
+.btn-p {
+  padding:12px 26px; border-radius:9px;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:700;
+  cursor:pointer; border:none; color:#fff; transition:all .2s;
+  background:var(--ksu);
+}
+.btn-p:hover { filter:brightness(1.1); transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,90,135,0.2); }
+.btn-s {
+  padding:12px 26px; border-radius:9px;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:600;
+  cursor:pointer; background:var(--surface); border:1px solid var(--border);
+  color:var(--text2); transition:all .2s;
+}
+.btn-s:hover { color:var(--ksu); border-color:var(--ksu); background:var(--ksu-light); }
+.sum-table {
+  width:100%; max-width:720px;
+  border-collapse:collapse; font-size:12px;
+  border:1px solid var(--border);
+  border-radius:12px; overflow:hidden;
+  box-shadow:0 1px 6px rgba(0,90,135,0.06);
+}
+.sum-table th {
+  font-family:'JetBrains Mono',monospace; font-size:8.5px; letter-spacing:2px;
+  color:var(--muted); padding:10px 16px;
+  border-bottom:1px solid var(--border);
+  text-align:left; background:var(--blue-50); text-transform:uppercase;
+}
+.sum-table td {
+  padding:10px 16px; border-bottom:1px solid var(--border);
+  color:var(--text2); vertical-align:top; line-height:1.5;
+}
+.sum-table tr:last-child td { border:none; }
+.tok { color:var(--correct); font-weight:700; font-family:'JetBrains Mono',monospace; }
+.tnk { color:var(--wrong);   font-weight:700; font-family:'JetBrains Mono',monospace; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand">IT426 · AI</span>
+  <span class="nav-sep"></span>
+  <span class="nav-title" id="nav-title">Uninformed Search Practice</span>
+  <button class="nav-back" id="nav-back" onclick="goHome()">← Back</button>
+  <img class="ksu-logo" src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAHsBQADASIAAhEBAxEB/8QAHAABAAMBAQEBAQAAAAAAAAAAAAUHCAYEAwIB/8QAXxAAAQMCAgQHCAwKBggFBAMBAQACAwQFBhEHEiExCBNBUWFxkRQVIlKBlLPRFzI2N0JFVnJ1obGyFhgjYnN0gpKT0jM0VVTB0yRDU6LCw+HwJYSVo7REZqXjJ2Nkg//EABsBAQACAwEBAAAAAAAAAAAAAAAFBgMEBwIB/8QARREAAgECAgQKCQMDAwQBBQEAAAECAwQFEQYSITETQVFTYXGBkaGxFBYiMjTB0eHwFVJyIzM1grLxJEJDYjYlRUZUouL/2gAMAwEAAhEDEQA/AOSREXUjhoREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAERFO4TwjiLE1PE2O1z1QByfLlqxM+c87B1Z5rxUqQpx1pvJGSlRqVpKFOLb5EQSK96Hg8VLrO51biKKO5na1kUBdC3oJJBOezbkMuYqtca6O8V4Sc59ztzpKQHZV0/5SE9Z3t/aAWnRxO1ry1IT293cSNzgt9bQVSpTeXRty68txySIi3yKCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiA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…" alt="King Saud University" style="height:38px;border-radius:5px;">
+</nav>
+
+<!-- HOME -->
+<div id="home">
+  <div class="home-pill">
+    <span class="home-pill-dot"></span>
+    <span class="home-pill-text">Uninformed Search · Step-by-Step Training</span>
+  </div>
+
+  <h1 class="home-title">
+    Practice &amp; <br>Master <span class="grad">Search</span>
+  </h1>
+  <p class="home-sub">
+    Choose an algorithm. Each question shows you the search trace and asks you to reason about frontier selection, expansion order, and solution paths — the same way you'll do it in exams.
+  </p>
+
+  <div class="concept-banner">
+    <div class="concept-label">🧠 Core Rules — What You Must Know</div>
+    <div class="concept-row">
+      <div class="concept-card bfs">
+        <h4>BFS — Breadth-First</h4>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Data structure: FIFO Queue</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Add children to BACK of queue</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Expand shallowest node first</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Goal test on GENERATION</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Optimal only if cost = 1 per step</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Tie-breaking: alphabetical</span></div>
+      </div>
+      <div class="concept-card dfs">
+        <h4>DFS — Depth-First</h4>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Data structure: LIFO Stack</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Add children to FRONT of frontier</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Expand deepest node first</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Goal test on EXPANSION</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>NOT optimal — finds first path</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Children pushed in REVERSE alpha</span></div>
+      </div>
+      <div class="concept-card ucs">
+        <h4>UCS — Uniform Cost</h4>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Data structure: Priority Queue</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Ordered by g(n) = total path cost</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Expand MINIMUM cost node</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Goal test on EXPANSION (pop)</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Always optimal (non-neg costs)</span></div>
+        <div class="concept-item"><span class="ci-arrow">▸</span><span>Update frontier if cheaper path found</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="algo-card" data-a="bfs" onclick="startPractice('bfs')">
+      <div class="card-badge">Queue · FIFO · Level 1</div>
+      <div class="card-abbr">BFS</div>
+      <div class="card-name">Breadth-First Search</div>
+      <div class="card-desc">Practice level-by-level expansion using Riyadh Metro stations — find the fewest-hop route from Airport to Al Jamiah.</div>
+      <div class="card-count">10 questions</div>
+      <div class="card-arr">→</div>
+    </div>
+    <div class="algo-card" data-a="dfs" onclick="startPractice('dfs')">
+      <div class="card-badge">Stack · LIFO · Level 2</div>
+      <div class="card-abbr">DFS</div>
+      <div class="card-name">Depth-First Search</div>
+      <div class="card-desc">Navigate an Adventure Game world — dive deep into dungeons and portals. Understand stacks, backtracking, and non-optimal paths.</div>
+      <div class="card-count">10 questions</div>
+      <div class="card-arr">→</div>
+    </div>
+    <div class="algo-card" data-a="ucs" onclick="startPractice('ucs')">
+      <div class="card-badge">Priority Queue · g(n) · Level 3</div>
+      <div class="card-abbr">UCS</div>
+      <div class="card-name">Uniform Cost Search</div>
+      <div class="card-desc">Route packets through a network of routers with real latency costs — find the lowest-latency path from Source to Destination.</div>
+      <div class="card-count">10 questions</div>
+      <div class="card-arr">→</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRACTICE -->
+<div id="practice">
+  <div class="practice-layout">
+    <div id="q-col">
+      <div class="prog-row">
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+        <span class="prog-lbl" id="prog-lbl">1/7</span>
+      </div>
+      <div class="rule-box" id="rule-box">
+        <strong>Rule Being Tested</strong>
+        <span id="rule-text"></span>
+      </div>
+      <div class="q-meta" id="q-meta">Question 1</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="trainer-box" id="trainer-box" style="display:none">
+        <h4>📋 Search Trace</h4>
+        <table class="trace-table" id="trace-table">
+          <thead><tr><th>Step</th><th>Node Expanded</th><th>Frontier After</th></tr></thead>
+          <tbody id="trace-body"></tbody>
+        </table>
+        <div class="trace-ask" id="trace-ask"></div>
+      </div>
+      <div class="options" id="options"></div>
+      <div class="fb-box" id="fb-box"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQ()">Next →</button>
+    </div>
+
+    <div class="map-panel">
+      <div class="map-lbl" id="map-lbl">Graph Reference</div>
+      <svg id="map-svg" viewBox="0 0 380 330" xmlns="http://www.w3.org/2000/svg">
+        <rect width="380" height="330" fill="#f4faff" rx="8"/>
+        <g id="map-edges"></g>
+        <g id="map-nodes"></g>
+      </svg>
+      <div class="legend">
+        <div class="li"><div class="ld" style="background:#15803d"></div>expanded</div>
+        <div class="li"><div class="ld" style="background:#b45309"></div>frontier</div>
+        <div class="li"><div class="ld" style="background:#0078B4"></div>goal</div>
+        <div class="li"><div class="ld" style="background:#7ccbfc"></div>solution</div>
+        <div class="li"><div class="ld" style="background:#b91c1c"></div>start</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="res-pct" id="res-pct"></div>
+  <div class="res-sub" id="res-sub"></div>
+  <div class="res-msg" id="res-msg"></div>
+  <div class="res-btns">
+    <button class="btn-p" id="retry-btn" onclick="retryAlgo()">Retry Same Algo</button>
+    <button class="btn-s" onclick="goHome()">Choose Another</button>
+  </div>
+  <table class="sum-table">
+    <thead><tr><th>#</th><th>Question</th><th>Result</th></tr></thead>
+    <tbody id="sum-body"></tbody>
+  </table>
+</div>
+
+<script>
+// ============ GRAPH DATA PER ALGO ============
+// BFS → Riyadh Metro  |  DFS → Adventure Game Map  |  UCS → Internet Router Network
+
+const GRAPHS = {
+
+// ── BFS: Riyadh Metro Stations ──────────────────────────────────────────
+bfs: {
+  label: "🚇 Riyadh Metro — Station Map",
+  nodes: {
+    Airport:    {x:310,y:28},
+    King_Fahd:  {x:195,y:28},
+    Olaya:      {x:100,y:65},
+    Riyadh_HQ:  {x:280,y:80},
+    University: {x:185,y:105},
+    AlMuruj:    {x:95,y:140},
+    AlWoroud:   {x:195,y:155},
+    Central:    {x:295,y:155},
+    AlBatha:    {x:110,y:215},
+    AlRahmaniya:{x:200,y:215},
+    AlSafarat:  {x:300,y:215},
+    AlShohada:  {x:115,y:280},
+    Dirab:      {x:210,y:285},
+    AlJamiah:   {x:310,y:285},
+  },
+  display: {
+    King_Fahd:"King Fahd", Riyadh_HQ:"Riyadh HQ",
+    AlMuruj:"Al Muruj", AlWoroud:"Al Woroud",
+    AlBatha:"Al Batha", AlRahmaniya:"Al Rahmaniya",
+    AlSafarat:"Al Safarat", AlShohada:"Al Shohada",
+    AlJamiah:"Al Jamiah",
+  },
+  edges: [
+    ["Airport","King_Fahd"],["Airport","Riyadh_HQ"],
+    ["King_Fahd","Olaya"],["King_Fahd","University"],
+    ["Olaya","AlMuruj"],["Olaya","University"],
+    ["Riyadh_HQ","University"],["Riyadh_HQ","Central"],
+    ["University","AlWoroud"],
+    ["AlMuruj","AlBatha"],["AlMuruj","AlWoroud"],
+    ["AlWoroud","AlRahmaniya"],["AlWoroud","Central"],
+    ["Central","AlSafarat"],
+    ["AlBatha","AlShohada"],["AlBatha","AlRahmaniya"],
+    ["AlRahmaniya","Dirab"],["AlRahmaniya","AlSafarat"],
+    ["AlSafarat","AlJamiah"],
+    ["AlShohada","Dirab"],["Dirab","AlJamiah"],
+  ]
+},
+
+// ── DFS: Adventure Game World Map ────────────────────────────────────────
+dfs: {
+  label: "🎮 Adventure Game — World Map",
+  nodes: {
+    Start:      {x:40,y:160},
+    Forest:     {x:110,y:80},
+    Cave:       {x:110,y:240},
+    Village:    {x:190,y:50},
+    Swamp:      {x:195,y:155},
+    Ruins:      {x:195,y:265},
+    Mountain:   {x:275,y:80},
+    Castle:     {x:280,y:165},
+    Dungeon:    {x:280,y:265},
+    Tower:      {x:350,y:110},
+    Portal:     {x:350,y:225},
+    Shrine:     {x:350,y:295},
+  },
+  display: {},
+  edges: [
+    ["Start","Forest"],["Start","Cave"],
+    ["Forest","Village"],["Forest","Swamp"],
+    ["Cave","Swamp"],["Cave","Ruins"],
+    ["Village","Mountain"],["Village","Swamp"],
+    ["Swamp","Castle"],["Swamp","Ruins"],
+    ["Mountain","Tower"],["Mountain","Castle"],
+    ["Castle","Tower"],["Castle","Portal"],["Castle","Dungeon"],
+    ["Ruins","Dungeon"],
+    ["Tower","Portal"],
+    ["Portal","Shrine"],["Dungeon","Shrine"],
+  ]
+},
+
+// ── UCS: Internet Router Network (with latency costs) ────────────────────
+ucs: {
+  label: "🌐 Network — Router Topology (ms latency)",
+  nodes: {
+    Source:   {x:40,y:155},
+    R1:       {x:115,y:65},
+    R2:       {x:115,y:245},
+    R3:       {x:200,y:30},
+    R4:       {x:200,y:130},
+    R5:       {x:200,y:225},
+    R6:       {x:200,y:305},
+    R7:       {x:285,y:80},
+    R8:       {x:285,y:175},
+    R9:       {x:285,y:270},
+    Dest:     {x:355,y:155},
+  },
+  display: {Source:"Source", Dest:"Destination"},
+  edges: [
+    ["Source","R1",10],["Source","R2",15],
+    ["R1","R3",8],["R1","R4",12],
+    ["R2","R4",9],["R2","R5",11],["R2","R6",20],
+    ["R3","R7",14],["R4","R7",7],["R4","R8",18],
+    ["R5","R8",6],["R5","R9",13],
+    ["R6","R9",5],
+    ["R7","Dest",9],["R8","Dest",4],["R9","Dest",16],
+  ]
+}
+
+};
+
+// Active graph for current algo
+let ACTIVE_GRAPH = null;
+
+function buildMap(){
+  if(!ACTIVE_GRAPH) return;
+  const {nodes, display, edges, label} = ACTIVE_GRAPH;
+  document.getElementById("map-lbl").textContent = label;
+  const eg=document.getElementById("map-edges"), ng=document.getElementById("map-nodes");
+  eg.innerHTML=""; ng.innerHTML="";
+
+  // Draw edges
+  edges.forEach(e=>{
+    const [a,b,w] = e;
+    const A=nodes[a], B=nodes[b]; if(!A||!B) return;
+    const l=document.createElementNS("http://www.w3.org/2000/svg","line");
+    l.setAttribute("x1",A.x); l.setAttribute("y1",A.y);
+    l.setAttribute("x2",B.x); l.setAttribute("y2",B.y);
+    l.setAttribute("stroke","#bddff2"); l.setAttribute("stroke-width","1.5");
+    l.id="e-"+a+"-"+b; eg.appendChild(l);
+    // Weight label only for UCS (weighted graph)
+    if(w !== undefined){
+      const mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
+      const t=document.createElementNS("http://www.w3.org/2000/svg","text");
+      t.setAttribute("x",mx); t.setAttribute("y",my-3);
+      t.setAttribute("text-anchor","middle");
+      t.setAttribute("font-family","JetBrains Mono, monospace");
+      t.setAttribute("font-size","7"); t.setAttribute("fill","#88b8cc");
+      t.textContent=w; eg.appendChild(t);
+    }
+  });
+
+  // Draw nodes
+  Object.entries(nodes).forEach(([name,pos])=>{
+    const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.id="city-"+name;
+    const r = (name==="Source"||name==="Dest") ? 8 : 6.5;
+    const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("cx",pos.x); c.setAttribute("cy",pos.y); c.setAttribute("r",r);
+    c.setAttribute("fill","#ffffff"); c.setAttribute("stroke","#8ecce8"); c.setAttribute("stroke-width","1.5");
+    g.appendChild(c);
+    const lbl = display[name] || name.replace(/_/g," ");
+    const t=document.createElementNS("http://www.w3.org/2000/svg","text");
+    // smart label placement
+    const dx = pos.x < 60 ? -8 : pos.x > 330 ? 8 : 0;
+    const dy = pos.y < 50 ? -11 : pos.y > 290 ? 14 : -10;
+    t.setAttribute("x",pos.x+dx); t.setAttribute("y",pos.y+dy);
+    t.setAttribute("text-anchor", pos.x < 60 ? "end" : pos.x > 330 ? "start" : "middle");
+    t.setAttribute("font-family","Plus Jakarta Sans, sans-serif");
+    t.setAttribute("font-size","8"); t.setAttribute("fill","#5590a8");
+    t.textContent=lbl; g.appendChild(t);
+    ng.appendChild(g);
+  });
+}
+
+function colorCity(name,state){
+  const S={
+    default:  {fill:"#ffffff",   stroke:"#8ecce8", sw:"1.5"},
+    expanded: {fill:"rgba(21,128,61,0.2)",   stroke:"#15803d", sw:"2.5"},
+    frontier: {fill:"rgba(180,83,9,0.15)",   stroke:"#b45309", sw:"2.5"},
+    goal:     {fill:"rgba(0,120,180,0.18)",  stroke:"#0078B4", sw:"2.5"},
+    solution: {fill:"rgba(124,203,252,0.35)",stroke:"#38aef8", sw:"2.5"},
+    start:    {fill:"rgba(185,28,28,0.15)",  stroke:"#b91c1c", sw:"2.5"},
+  };
+  const el=document.getElementById("city-"+name); if(!el) return;
+  const c=el.querySelector("circle"), s=S[state]||S.default;
+  c.setAttribute("fill",s.fill); c.setAttribute("stroke",s.stroke); c.setAttribute("stroke-width",s.sw);
+  const t=el.querySelector("text");
+  t.setAttribute("fill", state==="default"?"#5590a8":"#003254");
+  t.setAttribute("font-weight", state==="default"?"400":"700");
+}
+function colorEdge(a,b,col){
+  let el=document.getElementById("e-"+a+"-"+b)||document.getElementById("e-"+b+"-"+a);
+  if(!el) return;
+  el.setAttribute("stroke",col||"#bddff2");
+  el.setAttribute("stroke-width",col?"2.5":"1.5");
+}
+function resetMap(){
+  if(!ACTIVE_GRAPH) return;
+  Object.keys(ACTIVE_GRAPH.nodes).forEach(c=>colorCity(c,"default"));
+  ACTIVE_GRAPH.edges.forEach(e=>colorEdge(e[0],e[1],null));
+}
+function applyMap(ms){
+  resetMap(); if(!ms) return;
+  (ms.expanded||[]).forEach(c=>colorCity(c,"expanded"));
+  (ms.frontier||[]).forEach(c=>colorCity(c,"frontier"));
+  (ms.goal||[]).forEach(c=>colorCity(c,"goal"));
+  (ms.start||[]).forEach(c=>colorCity(c,"start"));
+  (ms.solution||[]).forEach(c=>colorCity(c,"solution"));
+  const sol=ms.solution||[];
+  for(let i=0;i<sol.length-1;i++) colorEdge(sol[i],sol[i+1],"#38aef8");
+}
+
+// ============ QUESTION BANKS ============
+// BFS → Riyadh Metro (Airport → AlJamiah)
+// DFS → Adventure Game (Start → Shrine)
+// UCS → Router Network (Source → Destination)
+
+const QUESTIONS = {
+
+// ─────────────────────────── BFS ───────────────────────────────────────
+bfs:[
+{
+  rule:"BFS uses a FIFO Queue — children added to the BACK; the FRONT node is expanded first",
+  q:"You are navigating Riyadh Metro using BFS, starting at Airport station. Goal: reach AlJamiah. Before any expansion, what is in the frontier?",
+  trace:[{step:0,exp:"—",front:"[Airport]"}],
+  ask:"What is in the frontier before the first expansion?",
+  activeStep:0,
+  opts:["[Airport]","[King_Fahd, Riyadh_HQ]","[Airport, King_Fahd]","Empty — BFS hasn't started"],
+  ans:0,
+  explain:"BFS initialises with only the start node in the frontier. No neighbours have been discovered yet. Frontier = [Airport].",
+  keyRule:"Initial frontier = {start node} only. Neighbours are added only when a node is expanded.",
+  map:{start:["Airport"],frontier:["Airport"],goal:["AlJamiah"],expanded:[],solution:[]}
+},
+{
+  rule:"BFS expands the FRONT node, then adds its neighbours to the BACK in alphabetical order",
+  q:"BFS expands Airport. Its neighbours are King_Fahd and Riyadh_HQ (alphabetical order). What does the frontier look like AFTER expanding Airport?",
+  trace:[
+    {step:0,exp:"—",front:"[Airport]"},
+    {step:1,exp:"Airport",front:"[King_Fahd, Riyadh_HQ]"}
+  ],
+  ask:"What is the frontier after Airport is expanded?",
+  activeStep:1,
+  opts:["[King_Fahd, Riyadh_HQ]","[Airport, King_Fahd, Riyadh_HQ]","[Riyadh_HQ, King_Fahd]","[Airport]"],
+  ans:0,
+  explain:"Airport is popped from the front. Its neighbours (King_Fahd, Riyadh_HQ — alphabetical) are added to the BACK. Airport moves to the explored set. Frontier = [King_Fahd, Riyadh_HQ].",
+  keyRule:"FIFO: pop from front → add children to BACK in alphabetical order.",
+  map:{start:["Airport"],expanded:["Airport"],frontier:["King_Fahd","Riyadh_HQ"],goal:["AlJamiah"],solution:[]}
+},
+{
+  rule:"BFS explores level by level — all depth-1 nodes are expanded before ANY depth-2 node",
+  q:"After expanding Airport → {King_Fahd, Riyadh_HQ}, BFS expands King_Fahd. King_Fahd's unvisited neighbours are Olaya and University. What is the frontier AFTER expanding King_Fahd?",
+  trace:[
+    {step:0,exp:"—",front:"[Airport]"},
+    {step:1,exp:"Airport",front:"[King_Fahd, Riyadh_HQ]"},
+    {step:2,exp:"King_Fahd",front:"[Riyadh_HQ, Olaya, University]"}
+  ],
+  ask:"What is the frontier after King_Fahd is expanded?",
+  activeStep:2,
+  opts:[
+    "[Riyadh_HQ, Olaya, University]",
+    "[Olaya, University, Riyadh_HQ]",
+    "[King_Fahd, Riyadh_HQ, Olaya]",
+    "[Olaya, University]"
+  ],
+  ans:0,
+  explain:"King_Fahd is at the front so it is expanded. Its unvisited neighbours (Olaya, University) go to the BACK. Riyadh_HQ is still waiting from depth-1. Result: [Riyadh_HQ, Olaya, University].",
+  keyRule:"BFS processes the full current level before going deeper. Riyadh_HQ (depth-1) stays ahead of Olaya/University (depth-2).",
+  map:{start:["Airport"],expanded:["Airport","King_Fahd"],frontier:["Riyadh_HQ","Olaya","University"],goal:["AlJamiah"],solution:[]}
+},
+{
+  rule:"BFS applies the goal test when a node is GENERATED (added to frontier), not when expanded",
+  q:"A student says: 'BFS only checks if a station is the goal when it is popped from the queue to be expanded.' Is this correct for BFS?",
+  trace:[],
+  ask:"When does BFS apply the goal test?",
+  activeStep:-1,
+  opts:[
+    "No — BFS checks for the goal when a node is GENERATED (added to the frontier)",
+    "Yes — BFS checks for the goal when a node is expanded (popped from queue)",
+    "BFS checks the goal both when generated AND when expanded",
+    "BFS never explicitly checks — it returns when the frontier is empty"
+  ],
+  ans:0,
+  explain:"BFS applies the goal test when a node is GENERATED (added to the frontier), not when it is expanded. This allows BFS to stop the moment AlJamiah is first discovered as a neighbour, making it faster. UCS does the opposite (goal test on expansion) for optimality.",
+  keyRule:"BFS goal test = on GENERATION. UCS goal test = on EXPANSION. Classic exam trap!",
+  map:{start:["Airport"],goal:["AlJamiah"],expanded:[],frontier:[],solution:[]}
+},
+{
+  rule:"BFS finds the path with the fewest hops (shallowest), not necessarily the shortest travel time",
+  q:"BFS finds the path Airport→King_Fahd→University→AlWoroud→AlRahmaniya→Dirab→AlJamiah (6 hops). Another path Airport→Riyadh_HQ→Central→AlSafarat→AlJamiah (4 hops) also exists. Which path does BFS return?",
+  trace:[],
+  ask:"Which path does BFS return and why?",
+  activeStep:-1,
+  opts:[
+    "Airport→Riyadh_HQ→Central→AlSafarat→AlJamiah — BFS always returns the fewest-hop path",
+    "Airport→King_Fahd→University→AlWoroud→AlRahmaniya→Dirab→AlJamiah — BFS picks by time, not hops",
+    "BFS returns whichever path it finds first, regardless of hops",
+    "BFS cannot decide — both paths have equal priority"
+  ],
+  ans:0,
+  explain:"BFS always returns the path with the fewest hops (shallowest depth). The 4-hop path via Riyadh_HQ is shallower, so BFS finds and returns it first. BFS does NOT consider edge weights (travel time).",
+  keyRule:"BFS = fewest hops. It is optimal only when all edges have equal cost.",
+  map:{start:["Airport"],expanded:["Airport","King_Fahd","Riyadh_HQ","Olaya","University","Central"],frontier:["AlMuruj","AlWoroud","AlSafarat"],goal:["AlJamiah"],solution:["Airport","Riyadh_HQ","Central","AlSafarat","AlJamiah"]}
+},
+{
+  rule:"Explored nodes are NEVER re-added to the frontier in BFS",
+  q:"BFS is searching from Airport. After expanding Olaya and University, AlWoroud has been discovered. Later, when AlMuruj is expanded, it finds AlWoroud as a neighbour. AlWoroud is already in the frontier. What does BFS do?",
+  trace:[
+    {step:0,exp:"—",front:"[Airport]"},
+    {step:1,exp:"Airport",front:"[King_Fahd, Riyadh_HQ]"},
+    {step:2,exp:"King_Fahd",front:"[Riyadh_HQ, Olaya, University]"},
+    {step:3,exp:"Riyadh_HQ",front:"[Olaya, University, Central]"},
+    {step:4,exp:"Olaya",front:"[University, Central, AlMuruj]"},
+    {step:5,exp:"University",front:"[Central, AlMuruj, AlWoroud]"},
+    {step:6,exp:"Central",front:"[AlMuruj, AlWoroud, AlSafarat]"},
+    {step:7,exp:"AlMuruj",front:"[AlWoroud, AlSafarat]"}
+  ],
+  ask:"When AlMuruj finds AlWoroud (already in frontier), BFS...",
+  activeStep:7,
+  opts:[
+    "Ignores AlWoroud — it is already in the frontier so it won't be added again",
+    "Adds AlWoroud again because it was found from a different path",
+    "Removes the old AlWoroud entry and inserts the new one",
+    "Stops and reports a loop"
+  ],
+  ans:0,
+  explain:"BFS checks both the explored set AND the frontier before adding a new node. Since AlWoroud is already in the frontier, it is not added again. This prevents duplicate processing.",
+  keyRule:"BFS never adds a node that is already in the explored set OR the frontier.",
+  map:{start:["Airport"],expanded:["Airport","King_Fahd","Riyadh_HQ","Olaya","University","Central","AlMuruj"],frontier:["AlWoroud","AlSafarat"],goal:["AlJamiah"],solution:[]}
+},
+{
+  rule:"BFS guarantees the fewest-hop path — it finishes one level completely before the next",
+  q:"BFS is searching from Airport to AlJamiah. After steps 1–7 the frontier contains [AlWoroud, AlSafarat, AlBatha]. BFS now expands AlWoroud. AlWoroud's unvisited neighbours are AlRahmaniya. What is the frontier AFTER expanding AlWoroud?",
+  trace:[
+    {step:1,exp:"Airport",front:"[King_Fahd, Riyadh_HQ]"},
+    {step:5,exp:"University",front:"[Central, AlMuruj, AlWoroud]"},
+    {step:7,exp:"AlMuruj",front:"[AlWoroud, AlSafarat, AlBatha]"},
+    {step:8,exp:"AlWoroud",front:"[AlSafarat, AlBatha, AlRahmaniya]"}
+  ],
+  ask:"What is the frontier after AlWoroud is expanded?",
+  activeStep:3,
+  opts:[
+    "[AlSafarat, AlBatha, AlRahmaniya]",
+    "[AlRahmaniya, AlSafarat, AlBatha]",
+    "[AlWoroud, AlSafarat, AlBatha, AlRahmaniya]",
+    "[AlSafarat, AlBatha]"
+  ],
+  ans:0,
+  explain:"AlWoroud is at the front and is expanded. Its unvisited neighbour AlRahmaniya is added to the BACK. AlSafarat and AlBatha stay at the front. Result: [AlSafarat, AlBatha, AlRahmaniya].",
+  keyRule:"FIFO queue: newly discovered nodes always go to the BACK, preserving level-by-level order.",
+  map:{start:["Airport"],expanded:["Airport","King_Fahd","Riyadh_HQ","Olaya","University","Central","AlMuruj","AlWoroud"],frontier:["AlSafarat","AlBatha","AlRahmaniya"],goal:["AlJamiah"],solution:[]}
+},
+{
+  rule:"BFS is COMPLETE — it is guaranteed to find a solution if one exists (for finite branching factor)",
+  q:"A student says: 'BFS might miss the goal station if the metro network is very large.' Is this correct?",
+  trace:[],
+  ask:"Is BFS guaranteed to find a solution when one exists?",
+  activeStep:-1,
+  opts:[
+    "No — BFS is COMPLETE: it will always find a solution if one exists, as long as the branching factor is finite",
+    "Yes — BFS can miss nodes in large graphs if the frontier grows too big",
+    "Only if the graph has no cycles",
+    "Only if the start and goal are on the same metro line"
+  ],
+  ans:0,
+  explain:"BFS is complete: as long as the branching factor b is finite, BFS will systematically explore every reachable node level by level. It cannot skip any node — it will always find the goal if it is reachable.",
+  keyRule:"BFS completeness: guaranteed if branching factor b is finite. It explores ALL nodes at depth d before depth d+1.",
+  map:{start:["Airport"],expanded:["Airport","King_Fahd","Riyadh_HQ","Olaya","University","Central"],frontier:["AlMuruj","AlWoroud","AlSafarat","AlBatha"],goal:["AlJamiah"],solution:[]}
+},
+{
+  rule:"BFS has exponential time AND space complexity — O(b^d) — because it stores the entire frontier",
+  q:"The Riyadh Metro network has an average branching factor b=3 and the goal AlJamiah is at depth d=5. Roughly how many nodes does BFS store in memory at the peak (the frontier at depth 5)?",
+  trace:[],
+  ask:"What is the worst-case number of nodes stored in the BFS frontier at depth d=5, b=3?",
+  activeStep:-1,
+  opts:[
+    "b^d = 3^5 = 243 nodes — the entire frontier at depth 5",
+    "b×d = 3×5 = 15 nodes",
+    "d = 5 nodes — only the current level",
+    "2^d = 32 nodes"
+  ],
+  ans:0,
+  explain:"BFS stores ALL nodes on the frontier simultaneously. At depth d=5 with branching factor b=3, the frontier can hold up to b^d = 3^5 = 243 nodes. This exponential space usage is BFS's biggest weakness for deep searches.",
+  keyRule:"BFS space complexity = O(b^d). This is exponential — it keeps ALL generated nodes in memory.",
+  map:{start:["Airport"],expanded:["Airport","King_Fahd","Riyadh_HQ"],frontier:["Olaya","University","Central","AlMuruj","AlWoroud","AlSafarat","AlBatha","AlRahmaniya"],goal:["AlJamiah"],solution:[]}
+},
+{
+  rule:"BFS expansion order follows strictly the depth level — a node at depth 2 is NEVER expanded before all depth-1 nodes are done",
+  q:"BFS from Airport has just expanded all depth-1 nodes: King_Fahd and Riyadh_HQ. The frontier now contains [Olaya, University, Central] (depth-2 nodes). Which of the following would VIOLATE the BFS property?",
+  trace:[
+    {step:1,exp:"Airport",front:"[King_Fahd, Riyadh_HQ]"},
+    {step:2,exp:"King_Fahd",front:"[Riyadh_HQ, Olaya, University]"},
+    {step:3,exp:"Riyadh_HQ",front:"[Olaya, University, Central]"}
+  ],
+  ask:"Which action would VIOLATE BFS correctness at this point?",
+  activeStep:2,
+  opts:[
+    "Expanding University before Olaya — because Olaya was added to the frontier first",
+    "Expanding Olaya first — it is at the front of the FIFO queue",
+    "Adding Central's children to the BACK of the frontier after expanding Central",
+    "Skipping AlMuruj because it is a depth-3 node"
+  ],
+  ans:0,
+  explain:"BFS uses a strict FIFO queue. Olaya was added to the queue before University, so Olaya must be expanded first. Expanding University before Olaya would violate the FIFO order. This also illustrates why the DATA STRUCTURE (queue) is crucial — it enforces the level-by-level property automatically.",
+  keyRule:"FIFO means FIRST added = FIRST expanded. Any deviation breaks the level-order guarantee.",
+  map:{start:["Airport"],expanded:["Airport","King_Fahd","Riyadh_HQ"],frontier:["Olaya","University","Central"],goal:["AlJamiah"],solution:[]}
+}
+],
+
+// ─────────────────────────── DFS ───────────────────────────────────────
+dfs:[
+{
+  rule:"DFS uses a LIFO Stack — new children are pushed to the TOP and the TOP is always expanded next",
+  q:"You are navigating an Adventure Game map using DFS. Your agent starts at 'Start'. Goal: reach 'Shrine'. Before any expansion, what is on the stack?",
+  trace:[{step:0,exp:"—",front:"Stack top → [Start]"}],
+  ask:"What is the initial stack state?",
+  activeStep:0,
+  opts:[
+    "top → [Start]",
+    "top → [Forest, Cave]",
+    "top → [Cave, Forest]",
+    "The stack is empty until the first expansion"
+  ],
+  ans:0,
+  explain:"DFS begins with only the start node on the stack. No neighbours have been pushed yet.",
+  keyRule:"Initial stack = {start node} only. Same as BFS at the start.",
+  map:{start:["Start"],frontier:["Start"],goal:["Shrine"],expanded:[],solution:[]}
+},
+{
+  rule:"DFS pushes children in REVERSE alphabetical order so the alphabetically FIRST child ends up on TOP",
+  q:"DFS expands 'Start'. Its neighbours are Cave and Forest (alphabetical). To expand Forest FIRST (alphabetically first), in what order are they pushed onto the stack?",
+  trace:[
+    {step:0,exp:"—",front:"top→[Start]"},
+    {step:1,exp:"Start",front:"top→[Forest, Cave]"}
+  ],
+  ask:"In what order are Start's children pushed?",
+  activeStep:1,
+  opts:[
+    "Push Cave first, then Forest (so Forest is on top)",
+    "Push Forest first, then Cave (so Cave is on top)",
+    "Push in alphabetical order: Cave, Forest",
+    "Order doesn't matter — both are pushed together"
+  ],
+  ans:0,
+  explain:"LIFO: last pushed = first popped. To expand Forest first, push Cave first, then push Forest on top. Now Forest is at the top and will be expanded next.",
+  keyRule:"DFS: push children in REVERSE alphabetical order so the alphabetically first child ends up on TOP.",
+  map:{start:["Start"],expanded:["Start"],frontier:["Forest","Cave"],goal:["Shrine"],solution:[]}
+},
+{
+  rule:"DFS dives as deep as possible — it always expands the node at the TOP of the stack",
+  q:"DFS from Start. Stack is top→[Forest, Cave]. DFS expands Forest. Forest's unvisited neighbours: Swamp, Village. After expanding Forest, what node is on the TOP of the stack?",
+  trace:[
+    {step:0,exp:"—",front:"top→[Start]"},
+    {step:1,exp:"Start",front:"top→[Forest, Cave]"},
+    {step:2,exp:"Forest",front:"top→[Swamp, Village, Cave]"}
+  ],
+  ask:"What node is on top of the stack after expanding Forest?",
+  activeStep:2,
+  opts:[
+    "Swamp (pushed last, so on top — DFS goes deeper immediately)",
+    "Cave (was already in the stack before Forest was expanded)",
+    "Village",
+    "Forest (remains on the stack after expansion)"
+  ],
+  ans:0,
+  explain:"Forest's children (Swamp, Village) are pushed in reverse alpha order: push Village first, then Swamp. Swamp is now on top. DFS will continue deeper into Swamp immediately — it never goes back to Cave or Village until the current branch is exhausted.",
+  keyRule:"DFS: newly added children go on TOP → always explores the deepest branch first.",
+  map:{start:["Start"],expanded:["Start","Forest"],frontier:["Swamp","Village","Cave"],goal:["Shrine"],solution:[]}
+},
+{
+  rule:"DFS may return a NON-OPTIMAL path because it stops as soon as it finds ANY path to the goal",
+  q:"DFS from Start finds the path: Start→Forest→Swamp→Castle→Dungeon→Shrine (5 hops). A shorter path exists: Start→Cave→Ruins→Dungeon→Shrine (4 hops). What does DFS do?",
+  trace:[],
+  ask:"DFS found Shrine via Dungeon. What does it do next?",
+  activeStep:-1,
+  opts:[
+    "Returns immediately with Start→Forest→Swamp→Castle→Dungeon→Shrine — does NOT look for shorter paths",
+    "Backtracks and finds the shorter path before returning",
+    "Continues exploring to confirm this is the shortest path",
+    "Returns failure because it did not find the optimal path"
+  ],
+  ans:0,
+  explain:"DFS is NOT optimal. The moment it reaches the goal it returns that path, regardless of whether a shorter or cheaper path exists. Here the 5-hop path is returned even though a 4-hop path exists via Cave.",
+  keyRule:"DFS = NOT optimal. Returns first found path, not the best one.",
+  map:{start:["Start"],expanded:["Start","Forest","Swamp","Castle","Dungeon"],frontier:[],goal:["Shrine"],solution:["Start","Forest","Swamp","Castle","Dungeon","Shrine"]}
+},
+{
+  rule:"DFS backtracks automatically when a dead end is reached — the stack handles it",
+  q:"DFS is exploring the Adventure Game and reaches Mountain. Mountain's only unvisited neighbour is Tower, which DFS then expands. Tower's only neighbour is Portal. After exploring Portal→Shrine (goal not reached via this sub-path yet), DFS needs to backtrack. What happens next?",
+  trace:[
+    {step:3,exp:"Village",front:"top→[Mountain, Swamp, Cave]"},
+    {step:4,exp:"Mountain",front:"top→[Tower, Castle, Swamp, Cave]"},
+    {step:5,exp:"Tower",front:"top→[Portal, Castle, Swamp, Cave]"},
+    {step:6,exp:"Portal",front:"top→[Shrine, Castle, Swamp, Cave]"},
+  ],
+  ask:"When DFS needs to backtrack from Portal, it...",
+  activeStep:3,
+  opts:[
+    "Pops the next node (Shrine) from the stack and expands it — the stack IS backtracking",
+    "Restarts the search from Start",
+    "Terminates and reports failure",
+    "Revisits Portal to try a different neighbour"
+  ],
+  ans:0,
+  explain:"DFS backtracking is automatic — it simply pops the next node from the LIFO stack. When Portal is done, the stack has [Shrine, Castle, Swamp, Cave]. Shrine is popped next. No explicit backtracking code is needed; the stack manages it.",
+  keyRule:"Backtracking in DFS = pop the next item from the stack. The stack IS the backtracking mechanism.",
+  map:{start:["Start"],expanded:["Start","Forest","Village","Mountain","Tower","Portal"],frontier:["Shrine","Castle","Swamp","Cave"],goal:["Shrine"],solution:[]}
+},
+{
+  rule:"DFS has O(b×m) space complexity — much better than BFS's O(b^d)",
+  q:"The Adventure Game map has a maximum branching factor b=3 (each location leads to at most 3 others) and maximum depth m=6. At most how many nodes does DFS need to store simultaneously?",
+  trace:[],
+  ask:"Maximum nodes stored at once by DFS:",
+  activeStep:-1,
+  opts:[
+    "b×m = 3×6 = 18 nodes (current path + alternatives at each level)",
+    "b^m = 3^6 = 729 nodes (must store entire frontier like BFS)",
+    "m = 6 nodes (only the current path)",
+    "b^d where d is the goal depth"
+  ],
+  ans:0,
+  explain:"DFS only stores the current path plus the unexplored siblings at each level. At each of the m=6 levels, at most b=3 nodes are stored (1 expanded + up to b-1 siblings). Total ≤ b×m = 18. BFS would need to store the entire frontier: up to b^d nodes.",
+  keyRule:"DFS space = O(b×m). BFS space = O(b^d). DFS wins on memory for deep searches.",
+  map:{start:["Start"],expanded:[],frontier:[],goal:["Shrine"],solution:[]}
+},
+{
+  rule:"DFS goal test is on EXPANSION (popping from stack), not on generation",
+  q:"DFS is searching for Shrine. Shrine appears as a neighbour of Portal and gets pushed onto the stack. At that moment (step 6), is the search complete?",
+  trace:[
+    {step:4,exp:"Mountain",front:"top→[Tower, Castle, Swamp, Cave]"},
+    {step:5,exp:"Tower",front:"top→[Portal, Castle, Swamp, Cave]"},
+    {step:6,exp:"Portal",front:"top→[Shrine, Castle, Swamp, Cave]"},
+    {step:7,exp:"Shrine ✓ GOAL",front:"top→[Castle, Swamp, Cave]"}
+  ],
+  ask:"At step 6, Shrine is pushed onto the stack. Is the search complete?",
+  activeStep:3,
+  opts:[
+    "No — the search completes only at step 7 when Shrine is POPPED and expanded",
+    "Yes — the search is complete the moment Shrine is pushed (generated)",
+    "Yes — DFS checks the goal immediately when a neighbour is discovered",
+    "No — DFS must empty the entire stack before declaring success"
+  ],
+  ans:0,
+  explain:"DFS (like UCS) applies the goal test when a node is EXPANDED (popped), not when it is generated (pushed). At step 6 Shrine is merely on the stack. At step 7 it is popped and the goal test fires — SOLUTION is returned. BFS would have stopped earlier (at generation).",
+  keyRule:"DFS & UCS: goal test on EXPANSION. BFS: goal test on GENERATION.",
+  map:{start:["Start"],expanded:["Start","Forest","Village","Mountain","Tower","Portal"],frontier:["Shrine","Castle","Swamp","Cave"],goal:["Shrine"],solution:["Start","Forest","Village","Mountain","Tower","Portal","Shrine"]}
+},
+{
+  rule:"DFS is NOT complete in infinite or cyclic state spaces without a visited/explored set",
+  q:"The Adventure Game map has a cycle: Forest ↔ Swamp ↔ Cave ↔ Forest. If DFS explores without an explored set (tree search), what happens?",
+  trace:[
+    {step:1,exp:"Start",front:"top→[Forest, Cave]"},
+    {step:2,exp:"Forest",front:"top→[Swamp, Village, Cave]"},
+    {step:3,exp:"Swamp",front:"top→[Cave, Ruins, Castle, Village, Cave]"},
+    {step:4,exp:"Cave",front:"top→[Forest, Ruins, Castle, Village, Cave]"},
+    {step:5,exp:"Forest",front:"top→[Swamp, Village, Ruins, Castle, Village, Cave]"}
+  ],
+  ask:"Without an explored set, DFS on a cyclic graph...",
+  activeStep:4,
+  opts:[
+    "Loops forever — Forest→Swamp→Cave→Forest→… never reaching Shrine",
+    "Still finds Shrine eventually — the stack handles cycles automatically",
+    "Backtracks correctly when it detects a repeated node",
+    "Terminates quickly because DFS only goes deep on one branch"
+  ],
+  ans:0,
+  explain:"Without an explored set (graph-search), DFS on a cyclic graph can loop infinitely. Forest expands Swamp, Swamp expands Cave, Cave expands Forest again — the same nodes keep getting pushed onto the stack. This is why graph-search (with an explored set) is essential for cyclic state spaces.",
+  keyRule:"DFS completeness: complete in FINITE acyclic spaces; may loop infinitely in cyclic graphs WITHOUT an explored set.",
+  map:{start:["Start"],expanded:["Start","Forest","Swamp","Cave"],frontier:["Forest","Ruins","Castle","Village","Cave"],goal:["Shrine"],solution:[]}
+},
+{
+  rule:"DFS explores ONE full branch before trying another — this is its defining characteristic",
+  q:"DFS from Start. After expanding Start → [Forest, Cave], DFS expands Forest → [Swamp, Village]. DFS then expands Swamp → [Castle, Ruins]. At this point, which nodes from the ORIGINAL frontier (Cave) and depth-1 (Village) have been expanded?",
+  trace:[
+    {step:1,exp:"Start",front:"top→[Forest, Cave]"},
+    {step:2,exp:"Forest",front:"top→[Swamp, Village, Cave]"},
+    {step:3,exp:"Swamp",front:"top→[Castle, Ruins, Village, Cave]"}
+  ],
+  ask:"How many of the original sibling nodes (Cave, Village) have been expanded so far?",
+  activeStep:2,
+  opts:[
+    "Zero — DFS has not touched Cave or Village yet; it went deep into Forest→Swamp first",
+    "One — Cave was expanded before Forest because it was in the frontier first",
+    "Both — DFS expands siblings before going deeper",
+    "One — Village was expanded as Forest's child before Swamp"
+  ],
+  ans:0,
+  explain:"This is the core DFS behaviour: it dives deep. Start→Forest→Swamp — three levels deep — before touching Cave or Village. Cave (sibling of Forest) and Village (sibling of Swamp) are sitting at the BOTTOM of the stack, untouched. DFS will only reach them after exhausting the current branch.",
+  keyRule:"DFS goes as DEEP as possible on the first branch before backtracking to explore siblings.",
+  map:{start:["Start"],expanded:["Start","Forest","Swamp"],frontier:["Castle","Ruins","Village","Cave"],goal:["Shrine"],solution:[]}
+},
+{
+  rule:"DFS with an explored set (graph-search) avoids revisiting nodes and is complete in finite spaces",
+  q:"DFS is exploring the Adventure Game. It has already expanded: Start, Forest, Swamp, Castle. Castle's neighbours include Forest (already in explored set) and Portal. What does DFS do with Forest?",
+  trace:[
+    {step:1,exp:"Start",front:"top→[Forest, Cave]"},
+    {step:2,exp:"Forest",front:"top→[Swamp, Village, Cave]"},
+    {step:3,exp:"Swamp",front:"top→[Castle, Ruins, Village, Cave]"},
+    {step:4,exp:"Castle",front:"top→[Tower, Portal, Dungeon, Ruins, Village, Cave]"}
+  ],
+  ask:"When Castle finds Forest as a neighbour (Forest is already explored), DFS...",
+  activeStep:3,
+  opts:[
+    "Skips Forest — it is already in the explored set and will not be pushed onto the stack",
+    "Pushes Forest onto the stack again — DFS does not check for repeated nodes",
+    "Stops the search because a cycle was detected",
+    "Removes Forest from the explored set and re-expands it"
+  ],
+  ans:0,
+  explain:"Graph-search DFS maintains an explored set. When Castle discovers Forest as a neighbour, it checks the explored set, finds Forest already there, and simply skips it. Only Portal (and other unvisited neighbours) are pushed onto the stack. This prevents cycles and guarantees completeness in finite graphs.",
+  keyRule:"Graph-search DFS: skip any neighbour already in the explored set. This prevents cycles.",
+  map:{start:["Start"],expanded:["Start","Forest","Swamp","Castle"],frontier:["Tower","Portal","Dungeon","Ruins","Village","Cave"],goal:["Shrine"],solution:[]}
+}
+],
+
+// ─────────────────────────── UCS ───────────────────────────────────────
+ucs:[
+{
+  rule:"UCS uses a Priority Queue ordered by g(n) = total path cost from the source node",
+  q:"A network agent uses UCS to find the lowest-latency route from Source to Destination. Source connects to R1 (10 ms) and R2 (15 ms). After expanding Source, what does the priority queue contain?",
+  trace:[
+    {step:0,exp:"—",front:"PQ: [(Source, 0)]"},
+    {step:1,exp:"Source (g=0)",front:"PQ: [(R1, 10), (R2, 15)]"}
+  ],
+  ask:"What is in the priority queue after expanding Source?",
+  activeStep:1,
+  opts:[
+    "[(R1, 10), (R2, 15)] — sorted by total latency (g-value)",
+    "[(R2, 15), (R1, 10)] — reverse order",
+    "[(Source, 0), (R1, 10), (R2, 15)]",
+    "[(R1, 10), (R2, 15), (Source, 0)]"
+  ],
+  ans:0,
+  explain:"UCS calculates g(n) = parent's g + edge cost. From Source (g=0): R1 gets g = 0+10 = 10, R2 gets g = 0+15 = 15. Priority queue orders by g ascending: [(R1,10),(R2,15)].",
+  keyRule:"g(n) = cumulative cost from start. Priority queue is sorted ascending — minimum cost always at front.",
+  map:{start:["Source"],expanded:["Source"],frontier:["R1","R2"],goal:["Dest"],solution:[]}
+},
+{
+  rule:"UCS always expands the node with the MINIMUM g(n) in the priority queue",
+  q:"UCS priority queue contains: [(R1,10), (R2,15)]. UCS expands R1 (g=10). R1's neighbours: R3 (cost 8) and R4 (cost 12). What does the priority queue look like AFTER expanding R1?",
+  trace:[
+    {step:1,exp:"Source (g=0)",front:"PQ: [(R1,10),(R2,15)]"},
+    {step:2,exp:"R1 (g=10)",front:"PQ: [(R2,15),(R3,18),(R4,22)]"}
+  ],
+  ask:"What is the priority queue after expanding R1?",
+  activeStep:1,
+  opts:[
+    "[(R2,15), (R3,18), (R4,22)]",
+    "[(R3,18), (R4,22), (R2,15)]",
+    "[(R1,10), (R2,15), (R3,18), (R4,22)]",
+    "[(R2,15), (R4,22), (R3,18)]"
+  ],
+  ans:0,
+  explain:"R1 (minimum g=10) is expanded. Its children: R3 gets g = 10+8 = 18, R4 gets g = 10+12 = 22. R2 was already in the queue at g=15. New queue sorted by g: [(R2,15),(R3,18),(R4,22)].",
+  keyRule:"UCS: always expand the node with the lowest g(n). Newly added children are inserted in sorted order.",
+  map:{start:["Source"],expanded:["Source","R1"],frontier:["R2","R3","R4"],goal:["Dest"],solution:[]}
+},
+{
+  rule:"UCS goal test is on EXPANSION (popping from queue), NOT on generation — this guarantees optimality",
+  q:"After several expansions, Destination first enters the priority queue at g=33 (via R8). At this point the queue also contains (R9, 28). What should UCS do?",
+  trace:[
+    {step:4,exp:"R4 (g=22)",front:"PQ: [(R2,15),(R3,18),(R8,28),(R7,29),(R9,35)]"},
+    {step:5,exp:"R2 (g=15)",front:"PQ: [(R3,18),(R5,26),(R8,28),(R7,29),(R6,35)]"},
+    {step:6,exp:"R3 (g=18)",front:"PQ: [(R5,26),(R8,28),(R7,29),(R6,35)]"},
+    {step:7,exp:"R5 (g=26)",front:"PQ: [(R8,28),(R7,29),(R9,39),(R6,35),(Dest,30)]"}
+  ],
+  ask:"Destination appears in the queue at g=30. Should UCS stop immediately?",
+  activeStep:3,
+  opts:[
+    "No — UCS must continue until Destination is POPPED as the minimum. A cheaper path may still exist.",
+    "Yes — the goal is in the queue so the search is complete",
+    "Yes — UCS applies the goal test when a node is generated",
+    "No — UCS must explore ALL nodes before declaring a solution"
+  ],
+  ans:0,
+  explain:"UCS applies the goal test only when a node is POPPED (expanded), not when it enters the queue. Even though Destination entered at g=30 via R8, R7 is still in the queue at g=29. When R7 is expanded, it might offer Destination at g=29+9=38 (worse) or another cheaper path. UCS must wait until Destination is the cheapest node in the queue.",
+  keyRule:"UCS goal test = on POPPING. If tested on generation it might return a non-optimal path.",
+  map:{start:["Source"],expanded:["Source","R1","R2","R3","R4","R5"],frontier:["R8","R7","R9","R6","Dest"],goal:["Dest"],solution:[]}
+},
+{
+  rule:"UCS replaces a frontier node when a CHEAPER path to that node is found",
+  q:"R8 is in the priority queue at g=28 (path: Source→R1→R4→R8, cost 10+12+6=28? Let's say 10+12+6=28). Now UCS expands R5 (g=26) and finds R8 via R5 with cost 26+6=32. Should the queue entry for R8 be updated?",
+  trace:[
+    {step:5,exp:"R2 (g=15)",front:"PQ: [(R5,26),(R8,28),(R7,29)]"},
+    {step:6,exp:"R5 (g=26)",front:"PQ: [(R8,28),(R7,29),(R9,39),(Dest,30)]"}
+  ],
+  ask:"R8 is at g=28. UCS finds a path to R8 via R5 costing 32. What happens to R8's entry?",
+  activeStep:1,
+  opts:[
+    "R8 stays at g=28 — the new path (32) is MORE expensive, so no update needed",
+    "R8 is updated to g=32 — UCS always replaces with the newest path",
+    "Both entries (g=28 and g=32) are kept in the queue",
+    "R8 is removed from the queue because it was found twice"
+  ],
+  ans:0,
+  explain:"UCS only updates a frontier node when the NEW path is CHEAPER. Here 32 > 28, so the existing entry g=28 is kept. UCS would update only if the new cost were lower than the current one.",
+  keyRule:"UCS frontier update: replace only if new_g < current_g. Keep the cheaper path.",
+  map:{start:["Source"],expanded:["Source","R1","R2","R3","R4","R5"],frontier:["R8","R7","R9","Dest"],goal:["Dest"],solution:[]}
+},
+{
+  rule:"UCS always finds the OPTIMAL (lowest-cost) path by expanding in order of cumulative cost",
+  q:"Which of these paths from Source to Destination has the lowest total latency?",
+  trace:[],
+  ask:"Which is the optimal (minimum latency) path?",
+  activeStep:-1,
+  opts:[
+    "Source→R2→R5→R8→Dest = 15+11+6+4 = 36 ms",
+    "Source→R1→R4→R8→Dest = 10+12+18+4 = 44 ms",
+    "Source→R1→R3→R7→Dest = 10+8+14+9 = 41 ms",
+    "Source→R2→R6→R9→Dest = 15+20+5+16 = 56 ms"
+  ],
+  ans:0,
+  explain:"Calculating all options:\n• Source→R2→R5→R8→Dest: 15+11+6+4 = 36 ms ✓\n• Source→R1→R4→R8→Dest: 10+12+18+4 = 44 ms\n• Source→R1→R3→R7→Dest: 10+8+14+9 = 41 ms\n• Source→R2→R6→R9→Dest: 15+20+5+16 = 56 ms\nUCS will find and return the 36 ms path.",
+  keyRule:"UCS guarantees minimum-cost path. Always calculate g(n) step by step.",
+  map:{start:["Source"],expanded:["Source","R1","R2","R3","R4","R5"],frontier:["R8","R7"],goal:["Dest"],solution:["Source","R2","R5","R8","Dest"]}
+},
+{
+  rule:"UCS expands nodes strictly in order of g(n) — cheaper nodes always come before expensive ones",
+  q:"The priority queue currently contains: [(R7,29),(R8,28),(R9,39),(Dest,30)]. Wait — after sorting by g: [(R8,28),(R7,29),(Dest,30),(R9,39)]. Which node is expanded NEXT?",
+  trace:[
+    {step:6,exp:"R5 (g=26)",front:"PQ: [(R8,28),(R7,29),(Dest,30),(R9,39)]"}
+  ],
+  ask:"Which node is expanded next from this priority queue?",
+  activeStep:0,
+  opts:[
+    "R8 (g=28) — the minimum cost node in the entire queue",
+    "R7 (g=29) — it was added before R8",
+    "Dest (g=30) — it's the goal so it has priority",
+    "R9 (g=39) — it was added most recently"
+  ],
+  ans:0,
+  explain:"UCS always pops the node with the minimum g(n) regardless of insertion order or whether it is the goal. R8 has g=28 which is the smallest, so R8 is expanded next. Dest being the goal gives it no special priority in UCS.",
+  keyRule:"UCS = strict minimum g(n) expansion. Goal has no special priority — it must wait its turn.",
+  map:{start:["Source"],expanded:["Source","R1","R2","R3","R4","R5"],frontier:["R8","R7","Dest","R9"],goal:["Dest"],solution:[]}
+},
+{
+  rule:"UCS is COMPLETE and OPTIMAL for non-negative edge costs",
+  q:"A student claims: 'UCS is optimal only if all edge costs are equal — just like BFS.' Is this correct?",
+  trace:[],
+  ask:"When is UCS optimal?",
+  activeStep:-1,
+  opts:[
+    "No — UCS is optimal for ANY non-negative edge costs, not just equal costs",
+    "Yes — UCS and BFS are both optimal only for equal (uniform) costs",
+    "No — UCS is NEVER optimal; only A* is optimal",
+    "Yes — UCS only becomes optimal when all costs are 1"
+  ],
+  ans:0,
+  explain:"BFS is optimal only when all step costs are equal. UCS is optimal for ANY graph with non-negative edge weights (costs ≥ 0). This is because UCS always expands the minimum-cost node first, guaranteeing that when the goal is popped, no cheaper path to it can remain undiscovered.",
+  keyRule:"UCS optimal condition: all edge costs ≥ 0. No equal-cost restriction needed.",
+  map:{start:["Source"],expanded:["Source","R1","R2","R3","R4","R5","R8"],frontier:["R7","Dest","R9"],goal:["Dest"],solution:["Source","R2","R5","R8","Dest"]}
+},
+{
+  rule:"UCS g(n) is the CUMULATIVE cost along the path — NOT just the last edge weight",
+  q:"UCS has expanded: Source(0) → R1(10) → R4(22). R4 connects to R8 with edge cost 18. What is g(R8) via this path?",
+  trace:[
+    {step:0,exp:"—",front:"PQ: [(Source,0)]"},
+    {step:1,exp:"Source (g=0)",front:"PQ: [(R1,10),(R2,15)]"},
+    {step:2,exp:"R1 (g=10)",front:"PQ: [(R2,15),(R3,18),(R4,22)]"},
+    {step:3,exp:"R2 (g=15)",front:"PQ: [(R3,18),(R4,22),(R5,26),(R6,35)]"},
+    {step:4,exp:"R3 (g=18)",front:"PQ: [(R4,22),(R5,26),(R6,35),(R7,32)]"}
+  ],
+  ask:"What is g(R8) when reached via Source→R1→R4→R8?",
+  activeStep:4,
+  opts:[
+    "g(R8) = 22 + 18 = 40 ms  (parent g + edge cost)",
+    "g(R8) = 18 ms  (just the last edge weight R4→R8)",
+    "g(R8) = 10 + 18 = 28 ms  (wrong parent used)",
+    "g(R8) = 0 + 18 = 18 ms  (only the edge from Source)"
+  ],
+  ans:0,
+  explain:"g(n) is the TOTAL cumulative cost from Source to n. Source→R1 costs 10, R1→R4 costs 12 (total 22), R4→R8 costs 18. So g(R8) = 22 + 18 = 40. Never use just the last edge weight.",
+  keyRule:"g(n) = sum of ALL edge costs along the path from start to n. Always accumulate, never reset.",
+  map:{start:["Source"],expanded:["Source","R1","R2","R3"],frontier:["R4","R5","R6","R7"],goal:["Dest"],solution:[]}
+},
+{
+  rule:"UCS and BFS both use a frontier, but UCS orders by COST while BFS orders by DEPTH",
+  q:"Both BFS and UCS start from Source and search for Destination. BFS finds path Source→R1→R7→Dest (3 hops, cost 10+14+9=33). UCS finds Source→R2→R5→R8→Dest (4 hops, cost 15+11+6+4=36). Which statement is TRUE?",
+  trace:[],
+  ask:"Which statement correctly compares BFS and UCS results here?",
+  activeStep:-1,
+  opts:[
+    "BFS found the fewest-hop path (3 hops); UCS found the lowest-cost path (36 ms) — wait, 33 < 36, so UCS should return 33 ms too! BFS path IS optimal here.",
+    "UCS is always better — it always finds a shorter path than BFS",
+    "BFS path (33 ms) is returned by BFS; UCS returns a DIFFERENT path only when a cheaper one exists",
+    "Both algorithms return the same path whenever the graph has uniform costs"
+  ],
+  ans:2,
+  explain:"BFS returns the fewest-hop path regardless of cost. UCS returns the minimum-cost path. Here BFS finds a 3-hop path costing 33 ms. If 33 ms is truly the cheapest path, UCS will also return it (costs 33 ms ≤ 36 ms). The key insight: BFS optimises for hops, UCS optimises for cost — they may agree or disagree depending on the graph.",
+  keyRule:"BFS = minimum hops. UCS = minimum cost. They agree when the cheapest path is also the shallowest.",
+  map:{start:["Source"],expanded:["Source","R1","R2"],frontier:["R3","R4","R5","R6"],goal:["Dest"],solution:["Source","R1","R7","Dest"]}
+},
+{
+  rule:"UCS can handle graphs where multiple paths lead to the same node — it always keeps the cheapest",
+  q:"R8 can be reached via two paths: (A) Source→R2→R5→R8 with cost 15+11+6=32, and (B) Source→R1→R4→R8 with cost 10+12+18=40. When UCS first adds R8 to the frontier via path B (cost 40), then later discovers path A (cost 32), what happens?",
+  trace:[
+    {step:2,exp:"R1 (g=10)",front:"PQ: [(R2,15),(R3,18),(R4,22)]"},
+    {step:4,exp:"R4 (g=22)",front:"PQ: [(R2,15),(R3,18),(R8,40),(R7,36)]"},
+    {step:5,exp:"R2 (g=15)",front:"PQ: [(R3,18),(R5,26),(R8,40),(R7,36),(R6,35)]"},
+    {step:7,exp:"R5 (g=26)",front:"PQ: [(R8,32),(R7,36),(R6,35),(R9,39)]"}
+  ],
+  ask:"When UCS finds a cheaper path to R8 (cost 32 < 40), it...",
+  activeStep:3,
+  opts:[
+    "Replaces R8's entry in the frontier: removes (R8,40) and inserts (R8,32)",
+    "Keeps both entries (R8,40) and (R8,32) in the frontier",
+    "Ignores the cheaper path because R8 was already in the frontier",
+    "Expands R8 immediately when the cheaper path is found"
+  ],
+  ans:0,
+  explain:"When UCS discovers a cheaper path to a node already in the frontier, it REPLACES the old entry with the cheaper one. (R8,40) is removed and (R8,32) is inserted. This frontier update is what makes UCS optimal — it always keeps only the cheapest known path to each node.",
+  keyRule:"UCS frontier update rule: if new_g(n) < old_g(n), replace the old entry. Keep only the cheapest path to each node.",
+  map:{start:["Source"],expanded:["Source","R1","R2","R3","R4","R5"],frontier:["R8","R7","R6","R9"],goal:["Dest"],solution:["Source","R2","R5","R8","Dest"]}
+}
+]
+};
+
+// ============ STATE ============
+let algo=null, qi=0, score=0, answered=false, history=[], qs=[];
+const COLORS={bfs:"#0062a1", dfs:"#0e93e8", ucs:"#003254"};
+const NAMES={bfs:"Breadth-First Search", dfs:"Depth-First Search", ucs:"Uniform Cost Search"};
+
+function startPractice(a){
+  algo=a; qi=0; score=0; answered=false; history=[]; qs=QUESTIONS[a];
+  ACTIVE_GRAPH = GRAPHS[a];
+  document.getElementById("home").style.display="none";
+  document.getElementById("results").style.display="none";
+  document.getElementById("practice").style.display="block";
+  document.getElementById("nav-title").textContent=NAMES[a]+" Practice";
+  document.getElementById("nav-title").style.color=COLORS[a];
+  document.getElementById("nav-back").style.display="inline-block";
+  document.getElementById("next-btn").style.background=COLORS[a];
+  buildMap(); renderQ();
+}
+
+function renderQ(){
+  answered=false;
+  const q=qs[qi], total=qs.length, color=COLORS[algo];
+  document.getElementById("q-meta").textContent="Question "+(qi+1)+" of "+total+" · "+NAMES[algo];
+  document.getElementById("q-text").textContent=q.q;
+  document.getElementById("prog-lbl").textContent=(qi+1)+"/"+total;
+  document.getElementById("prog-fill").style.width=((qi+1)/total*100)+"%";
+  document.getElementById("prog-fill").style.background=color;
+  document.getElementById("rule-text").textContent=q.rule;
+
+  const tb=document.getElementById("trainer-box");
+  const tbody=document.getElementById("trace-body");
+  const ask=document.getElementById("trace-ask");
+  tbody.innerHTML="";
+  // Always hide trace BEFORE answering — revealed in pick()
+  tb.style.display="none";
+  if(q.trace && q.trace.length>0){
+    // Pre-build rows (hidden), shown after answer
+    q.trace.forEach((s,i)=>{
+      const tr=document.createElement("tr");
+      if(i===q.activeStep) tr.className="active";
+      tr.innerHTML="<td>"+s.step+"</td><td>"+s.exp+"</td><td>"+s.front+"</td>";
+      tbody.appendChild(tr);
+    });
+    ask.textContent=q.ask||"";
+  }
+
+  const oe=document.getElementById("options"); oe.innerHTML="";
+  const labels=["A","B","C","D"];
+  q.opts.forEach((opt,i)=>{
+    const b=document.createElement("button"); b.className="opt";
+    b.innerHTML='<span class="opt-lbl">'+labels[i]+'</span><span>'+opt+'</span>';
+    b.onclick=()=>pick(i); oe.appendChild(b);
+  });
+
+  document.getElementById("fb-box").className="fb-box";
+  document.getElementById("fb-box").innerHTML="";
+  const nb=document.getElementById("next-btn");
+  nb.className="next-btn";
+  nb.textContent=qi<qs.length-1?"Next Question →":"See Results →";
+  applyMap(q.map||{});
+}
+
+function pick(sel){
+  if(answered) return; answered=true;
+  const q=qs[qi], ok=sel===q.ans;
+  if(ok) score++;
+  document.querySelectorAll(".opt").forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans) b.classList.add("correct");
+    if(i===sel && !ok) b.classList.add("wrong");
+  });
+  const fb=document.getElementById("fb-box");
+  fb.className="fb-box show "+(ok?"ok":"no");
+  fb.innerHTML='<div class="fb-title">'+(ok?"✓ Correct!":"✗ Not quite — here's why:")+'</div>'
+    +q.explain
+    +(q.keyRule?'<div class="key-rule">📌 Key Rule: '+q.keyRule+'</div>':"");
+  document.getElementById("next-btn").classList.add("show");
+  history.push({q:q.q, correct:ok});
+
+  // Reveal trace AFTER answering
+  const tb=document.getElementById("trainer-box");
+  if(q.trace && q.trace.length>0){
+    tb.style.display="block";
+    tb.style.animation="fadeUp .35s ease";
+  }
+}
+
+function nextQ(){ qi++; if(qi>=qs.length){ showResults(); return; } renderQ(); }
+
+function showResults(){
+  document.getElementById("practice").style.display="none";
+  const r=document.getElementById("results");
+  r.style.display="flex";
+  const pct=Math.round(score/qs.length*100);
+  const rp=document.getElementById("res-pct");
+  rp.textContent=pct+"%";
+  rp.style.color=pct>=80?COLORS[algo]:pct>=50?"#b45309":"#b91c1c";
+  document.getElementById("res-sub").textContent=score+"/"+qs.length+" correct · "+NAMES[algo];
+  document.getElementById("res-msg").textContent=
+    pct===100?"Excellent! You fully understand how "+NAMES[algo]+" works."
+    :pct>=80?"Great understanding! Review the rules for the ones you missed."
+    :pct>=50?"Good start. Focus on the highlighted key rules and try again."
+    :"Keep practicing — trace each step manually on the map. It gets easier!";
+  document.getElementById("retry-btn").style.background=COLORS[algo];
+  const sb=document.getElementById("sum-body"); sb.innerHTML="";
+  history.forEach((h,i)=>{
+    const tr=document.createElement("tr");
+    const short=h.q.length>80?h.q.slice(0,77)+"...":h.q;
+    tr.innerHTML='<td style="font-family:JetBrains Mono,monospace;color:var(--muted)">'+(i+1)+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+short+'</td>'
+      +'<td class="'+(h.correct?"tok":"tnk")+'">'+(h.correct?"✓":"✗")+'</td>';
+    sb.appendChild(tr);
+  });
+}
+
+function retryAlgo(){ startPractice(algo); }
+function goHome(){
+  document.getElementById("practice").style.display="none";
+  document.getElementById("results").style.display="none";
+  document.getElementById("nav-back").style.display="none";
+  document.getElementById("nav-title").textContent="Uninformed Search Practice";
+  document.getElementById("nav-title").style.color="var(--ksu)";
+  document.getElementById("home").style.display="flex";
+}
+// ACTIVE_GRAPH is set inside startPractice(); no buildMap needed at load time
+</script>
+</body>
+</html>
