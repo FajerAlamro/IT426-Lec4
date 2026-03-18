@@ -882,7 +882,7 @@ dfs:[
 },
 {
   rule:"DFS pushes children to the TOP of the stack; alphabetically first child ends up on top (pushed last)",
-  q:"DFS expands 'Start'. Its neighbours are Cave and Forest (alphabetical). They are pushed so Forest ends up on top. What does the frontier look like AFTER expanding Start? (Left = top of stack)",
+  q:"DFS expands 'Start'. Its neighbours are Cave and Forest (alphabetical). What does the frontier look like AFTER expanding Start? (Left = top of stack)",
   trace:[{step:0,exp:"—",front:"[Start]"},{step:1,exp:"Start",front:"[Forest, Cave]"}],
   ask:"What is the frontier after Start is expanded? (Explored = {Start})",
   activeStep:1,
@@ -894,7 +894,7 @@ dfs:[
 },
 {
   rule:"DFS always expands the TOP of the stack — it dives deep immediately without finishing the current level",
-  q:"Frontier = [Forest, Cave]. DFS expands Forest. Forest's unvisited neighbours: Swamp, Village (alpha). Pushed so Swamp ends up on top. What is the frontier AFTER expanding Forest?",
+  q:"Frontier = [Forest, Cave]. DFS expands Forest. Forest's unvisited neighbours: Swamp, Village (alpha). What is the frontier AFTER expanding Forest?",
   trace:[{step:0,exp:"—",front:"[Start]"},{step:1,exp:"Start",front:"[Forest, Cave]"},{step:2,exp:"Forest",front:"[Swamp, Village, Cave]"}],
   ask:"What is the frontier after Forest is expanded? (Explored = {Start, Forest})",
   activeStep:2,
@@ -906,7 +906,7 @@ dfs:[
 },
 {
   rule:"DFS goes as deep as possible — siblings at earlier levels wait at the bottom of the stack",
-  q:"Frontier = [Swamp, Village, Cave]. DFS expands Swamp. Swamp's unvisited neighbours: Castle, Ruins (alpha). Pushed so Castle on top. What is the frontier AFTER expanding Swamp?",
+  q:"Frontier = [Swamp, Village, Cave]. DFS expands Swamp. Swamp's unvisited neighbours: Castle, Ruins (alpha). What is the frontier AFTER expanding Swamp?",
   trace:[{step:1,exp:"Start",front:"[Forest, Cave]"},{step:2,exp:"Forest",front:"[Swamp, Village, Cave]"},{step:3,exp:"Swamp",front:"[Castle, Ruins, Village, Cave]"}],
   ask:"What is the frontier after Swamp is expanded? (Explored = {Start, Forest, Swamp})",
   activeStep:2,
@@ -918,7 +918,7 @@ dfs:[
 },
 {
   rule:"DFS backtracks automatically — the stack IS the backtracking mechanism; the next item is the backtrack point",
-  q:"Frontier = [Castle, Ruins, Village, Cave]. DFS expands Castle. Castle's unvisited neighbours: Dungeon, Portal, Tower (alpha). Pushed so Dungeon on top. What is the frontier AFTER expanding Castle?",
+  q:"Frontier = [Castle, Ruins, Village, Cave]. DFS expands Castle. Castle's unvisited neighbours: Dungeon, Portal, Tower (alpha). What is the frontier AFTER expanding Castle?",
   trace:[{step:2,exp:"Forest",front:"[Swamp, Village, Cave]"},{step:3,exp:"Swamp",front:"[Castle, Ruins, Village, Cave]"},{step:4,exp:"Castle",front:"[Dungeon, Portal, Tower, Ruins, Village, Cave]"}],
   ask:"What is the frontier after Castle is expanded? (Explored = {Start, Forest, Swamp, Castle})",
   activeStep:2,
